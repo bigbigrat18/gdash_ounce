@@ -32,7 +32,16 @@ What differs from the Switch 1 build:
   (OunceVK/Mesa output) are written next to the `.nro`. Grab these if
   something breaks on hardware.
 
+### Download
+
+Grab `gdash_switch2.nro` from the [Releases](../../releases) page (Switch 2 /
+kaiHEN). Every push also builds Switch 1 and Switch 2 `.nro`s under
+[Actions](../../actions); open a run and download its artifacts.
+
 ### How to install
+
+Your saves and settings folder from the Switch 1 port works as-is: copy it
+over and drop the Switch 2 `.nro` in.
 
 You need a **2.2.14x arm64** Android release; extract the files from your own
 legally-owned copy of the game.
@@ -47,7 +56,7 @@ Create a separate folder for each game you install and fill it:
 
 ```
 /switch/<anything>/
-  gdash_nx.nro
+  gdash_switch2.nro       # or whatever the .nro is called
   libcocos2dcpp.so        # from the APK's lib/arm64-v8a/
   libfmod.so              # from the APK's lib/arm64-v8a/
   assets/                 # the entire contents of the APK's assets/ folder
@@ -60,8 +69,10 @@ Create a separate folder for each game you install and fill it:
 ### Notes
 
 This will not run in applet/album mode — it needs the full memory of a game
-override. Launch it by holding **R** while opening an installed title, or use
-a forwarder.
+override. Launch hbmenu by holding **R** while opening an installed title
+(on kaiHEN, the first R-launch after starting HEN may open the game itself;
+close it and do it again), then start the port. On Switch 1 a forwarder also
+works.
 
 `config.txt` is created on first run:
 
@@ -81,26 +92,33 @@ pacman -S devkitA64 switch-tools libnx switch-sdl2 switch-mesa switch-libdrm_nou
 ```
 
 For Switch 2, also install the ounce devkit (`libounce`, `ouncevk`,
-`libkaihen`) — run `sh install.sh` from
-[ounce-devkit](https://github.com/ouncebrew/ounce-devkit), or use its Docker image:
+`libkaihen`) by running `sh install.sh` from
+[ounce-devkit](https://github.com/ouncebrew/ounce-devkit).
+
+Then `make` for Switch 2, or `make SWITCH1=1` for the original Switch 1 build.
+
+No local toolchain? Use Docker the same way CI does: the "Build the devkit
+image" step in `.github/workflows/build.yml` makes an `ounce-devkit` image
+from devkitPro's image plus the three [ounce] packages, then:
 
 ```sh
-git clone https://github.com/ouncebrew/ounce-devkit && docker build -t ounce-devkit ounce-devkit
 docker run --rm -v "$PWD:/build/gdash" -w /build/gdash ounce-devkit make
 ```
 
-Then `make` for Switch 2, or `make SWITCH1=1` for the original Switch 1 build.
-GitHub Actions (`.github/workflows/build.yml`) builds both and uploads the `.nro`s.
+(The devkit's own `docker build` works too, but it syncs pacman with
+pkg.devkitpro.org, which sometimes answers 403.)
 
 ### Credits
 
+* naga (NaGaa95) for the original Geometry Dash Switch port this fork builds on.
+* The kaiHEN / ounce-devkit contributors for the Switch 2 homebrew runtime and SDK.
 * TheOfficialFloW for the original Android so-loader.
 * hatoving for the Geometry Dash PS Vita port this one is based on.
 * fgsfds for max_nx / the Switch so-loader groundwork reused here.
 
 ### Support
 
-If you enjoy my work and want to support me :
+Support naga, the original port's author:
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/D1D1P2MOG)
 
@@ -112,4 +130,4 @@ from the original game or its Android release are included here. We do not
 condone piracy; users must own a legal copy of the game.
 
 Unless noted otherwise, the source in this repository is under the MIT
-License (see LICENSE).
+License, as stated in the original port and in the headers of its source files.
