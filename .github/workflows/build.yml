@@ -1,0 +1,52 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: switch2
+            flags: ""
+          - name: switch1
+            flags: "SWITCH1=1"
+    steps:
+      - uses: actions/checkout@v4
+
+      # devkitPro's image already has devkitA64, libnx and the Switch portlibs.
+      # The Switch 2 devkit (libounce, OunceVK, libkaihen) is installed from
+      # the [ounce] repository's package files directly: syncing pacman's
+      # databases would hit pkg.devkitpro.org, which often refuses CI runners.
+      - name: Build the devkit image
+        run: |
+          mkdir -p /tmp/devkit && cd /tmp/devkit
+          curl -fsSL -o ounce.db https://pkg.ouncebrew.org/ounce.db
+          for pkg in libounce ouncevk libkaihen; do
+            file=$(tar -xOf ounce.db --wildcards "$pkg-[0-9]*/desc" | grep -A1 '^%FILENAME%$' | tail -n1)
+            echo "$pkg: $file"
+            curl -fsSL -o "$file" "https://pkg.ouncebrew.org/$file"
+          done
+          cat > Dockerfile <<'EOF'
+          FROM docker.io/devkitpro/devkita64:20260219
+          COPY *.pkg.tar.zst /tmp/pkgs/
+          RUN dkp-pacman -U --noconfirm /tmp/pkgs/*.pkg.tar.zst && rm -rf /tmp/pkgs
+          EOF
+          docker build -t ounce-devkit .
+
+      - name: Build
+        run: |
+          docker run --rm -v "$PWD:/build/gdash" -w /build/gdash ounce-devkit \
+            make -j"$(nproc)" ${{ matrix.flags }}
+          mkdir -p out
+          mv gdash.nro out/gdash_${{ matrix.name }}.nro
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gdash_${{ matrix.name }}
+          path: out/*.nro
