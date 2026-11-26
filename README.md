@@ -34,7 +34,7 @@ What differs from the Switch 1 build:
 
 ### Download
 
-Grab `gdash_switch2.nro` from the [Releases](../../releases) page (Switch 2 /
+Grab `gdash_ounce.nro` from the [Releases](../../releases) page (Switch 2 /
 kaiHEN). Every push also builds Switch 1 and Switch 2 `.nro`s under
 [Actions](../../actions); open a run and download its artifacts.
 
